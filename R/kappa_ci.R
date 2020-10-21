@@ -6,8 +6,11 @@
 #' @param x A 2x2 table.
 #' @param level Level of the confidence interval.
 #'
-#' @return
 #' @export
+#'
+#' @examples
+#' tab <- matrix(c(10, 2, 2, 4), ncol = 2)
+#' kappa_ci(tab)
 kappa_ci <- function(x, level = 0.95) {
   n <- sum(x)
   c <- (n + 3) * (n + 2) * (n + 1) / 6

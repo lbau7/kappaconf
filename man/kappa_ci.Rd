@@ -7,13 +7,15 @@
 kappa_ci(x, level = 0.95)
 }
 \arguments{
-\item{x}{A table.}
+\item{x}{A 2x2 table.}
 
 \item{level}{Level of the confidence interval.}
 }
-\value{
-
-}
 \description{
-Cohen's Kappa Confidence Interval
+Implements the exact bootstrap confidence interval for Cohen's kappa in small
+samples by Klar et al. (2002).
+}
+\examples{
+tab <- matrix(c(10, 2, 2, 4), ncol = 2)
+kappa_ci(tab)
 }
