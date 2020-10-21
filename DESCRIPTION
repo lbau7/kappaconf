@@ -1,0 +1,10 @@
+Package: kappaconf
+Type: Package
+Title: Computes Confidence Intervals for Cohen's Kappa
+Version: 0.1.0
+Author: Lukas Baumann
+Maintainer: Lukas Baumann <baumann@imbi.uni-heidelberg.de>
+Description: Computes confidence interval for Cohen's kappa.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
