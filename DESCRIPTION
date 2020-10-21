@@ -4,7 +4,9 @@ Title: Computes Confidence Intervals for Cohen's Kappa
 Version: 0.1.0
 Author: Lukas Baumann
 Maintainer: Lukas Baumann <baumann@imbi.uni-heidelberg.de>
-Description: Computes confidence interval for Cohen's kappa.
+Description: Computes confidence interval for Cohen's kappa. Implements the
+    method by:
+    Klar, N., Lipsitz, S.R., Parzen, M., & Leong, T. 2002. <doi:10.1111/1467-9884.00331>
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

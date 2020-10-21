@@ -1,6 +1,9 @@
 #' Cohen's Kappa Confidence Interval
 #'
-#' @param x A table.
+#' Implements the exact bootstrap confidence interval for Cohen's kappa in small
+#' samples by Klar et al. (2002).
+#'
+#' @param x A 2x2 table.
 #' @param level Level of the confidence interval.
 #'
 #' @return
