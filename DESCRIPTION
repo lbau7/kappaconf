@@ -8,3 +8,4 @@ Description: Computes confidence interval for Cohen's kappa.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.1
