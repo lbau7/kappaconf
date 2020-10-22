@@ -3,7 +3,7 @@
 #' Implements the exact bootstrap confidence interval for Cohen's kappa in small
 #' samples by Klar et al. (2002).
 #'
-#' @param x A 2x2 table.
+#' @param x A 2x2 matrix
 #' @param level Level of the confidence interval.
 #'
 #' @export
@@ -12,41 +12,66 @@
 #' tab <- matrix(c(10, 2, 2, 4), ncol = 2)
 #' kappa_ci(tab)
 kappa_ci <- function(x, level = 0.95) {
+  if (!is.matrix(x)) stop("x isn't a matrix")
+  if (any(dim(x) != 2)) stop("incorrect dimension of x")
+
+  # Create matrix with all possible cases
   n <- sum(x)
-  c <- (n + 3) * (n + 2) * (n + 1) / 6
-  a <- matrix(0, ncol = 7, nrow = c)
+  no_cases <- (n + 3) * (n + 2) * (n + 1) / 6
+  all_cases <- matrix(0, ncol = 4, nrow = no_cases)
   i <- 1
   for (m00 in 0:n) {
     for (m01 in 0:(n - m00)) {
       for (m10 in 0:(n - m00 - m01)) {
         m11 <- n - m00 - m01 - m10
         m_vec <- c(m00, m01, m10, m11)
-        a[i, 1:4] <- m_vec
+        all_cases[i, 1:4] <- m_vec
         i <- i + 1
       }
     }
   }
-  a[, 5] <- ((a[, 4] + a[, 1]) / n - ((a[, 3] + a[, 4]) * (a[, 2] + a[, 4]) +
-    (a[, 1] + a[, 2]) * (a[, 1] + a[, 3])) / n^2) /
-    (1 - ((a[, 3] + a[, 4]) * (a[, 2] + a[, 4]) + (a[, 1] + a[, 2]) *
-    (a[, 1] + a[, 3])) / n^2)
-  a[c(1, c), 5] <- 1
+
+  # Calculate Kappa
+  m00 <- all_cases[, 1]
+  m01 <- all_cases[, 2]
+  m10 <- all_cases[, 3]
+  m11 <- all_cases[, 4]
+  m0p <- m00 + m01
+  m1p <- m10 + m11
+  mp0 <- m00 + m10
+  mp1 <- m01 + m11
+  kappa <- ((m11 + m00) / n - (m1p * mp1 + m0p * mp0) / n^2) /
+    (1 - (m1p * mp1 + m0p * mp0) / n^2)
+  kappa[c(1, no_cases)] <- 1 # Is NaN because denominator is 0
+
+  # Calculate probabilities
   p00 <- x[1, 1] / n
   p01 <- x[1, 2] / n
   p10 <- x[2, 1] / n
   p11 <- x[2, 2] / n
-  a[, 6] <- factorial(n) / (factorial(a[, 1]) * factorial(a[, 2]) *
-    factorial(a[, 3]) * factorial(a[, 4])) *
-    p00^a[, 1] * p01^a[, 2] * p10^a[, 3] * p11^a[, 4]
-  a <- a[order(a[, 5]), ]
-  a[, 7] <- cumsum(a[, 6])
-  ll <- (1 - level) / 2
-  lu <- 1 - (1 - level) / 2
-  q <- cut(a[, 7], c(0, ll, lu, 1))
-  tq <- cumsum(table(q))
-  cl <- (a[tq[1], 5] * (a[tq[1] + 1, 7] - ll) + a[tq[1] + 1, 5] *
-    (ll - a[tq[1], 7])) / (a[tq[1] + 1, 7] - a[tq[1], 7])
-  cu <- (a[tq[2], 5] * (a[tq[2] + 1, 7] - ll) + a[tq[2] + 1, 5] *
-    (ll - a[tq[2], 7])) / (a[tq[2] + 1, 7] - a[tq[2], 7])
-  c(cl, cu)
+  prob <- factorial(n) / (factorial(m00) * factorial(m01) * factorial(m10) *
+    factorial(m11)) * p00^m00 * p01^m01 * p10^m10 * p11^m11
+
+  # Calculate bootstrap distribution
+  sort_order <- order(kappa)
+  kappa <- kappa[sort_order]
+  prob <- prob[sort_order]
+  agframe <- aggregate(prob, list(kappa), sum)
+  browser()
+  prob <- agframe[, 2]
+  kappa <- agframe[, 1]
+  cumprob <- cumsum(prob)
+
+  # Calculate confidence limits
+  qlow <- (1 - level) / 2
+  qup <- 1 - (1 - level) / 2
+  qcut <- cumsum(table(cut(cumprob, c(0, qlow, qup, 1))))
+  clow <- (kappa[qcut[1]] * (cumprob[qcut[1] + 1] - qlow) +
+    kappa[qcut[1] + 1] * (qlow - cumprob[qcut[1]])) /
+    (cumprob[qcut[1] + 1] - cumprob[qcut[1]])
+  cup <- (kappa[qcut[2]] * (cumprob[qcut[2] + 1] - qup) +
+      kappa[qcut[2] + 1] * (qup - cumprob[qcut[2]])) /
+    (cumprob[qcut[2] + 1] - cumprob[qcut[2]])
+
+  c(clow, cup)
 }
